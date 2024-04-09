@@ -1,42 +1,32 @@
 import numpy as np
 import scipy.io.wavfile as wav
 
+# Aplica meia função cosseno para fade in e fade out
+def fade_in_out(signal, fade_length = 1000):
+    fade_in = (1 - np.cos(np.linspace(0, np.pi, fade_length))) * 0.5
+    fade_out = np.flip(fade_in)
+
+    for i in range(fade_length):
+        signal[i] *= fade_in[i]
+        signal[len(signal) - i - 1] *= fade_out[fade_length - i - 1]
+
+    return signal
+
 sample_rate = 44100
-f = 220 # frequência da nota musical
+f = 440 # Frequência da nota musical
 t_total = 3
 t_decorrido = 0
 
-# array de audio
-output = np.zeros(t_total * sample_rate) 
+gain = -20 # Decibels
+amplitude = 10 ** (gain / 20)
+
+# Array de audio
+output = np.zeros(t_total * sample_rate)
 
 for i in range(t_total * sample_rate):
-    output[i] = np.sin(2 * np.pi * f * t_decorrido)
+    output[i] = amplitude * np.sin(2 * np.pi * f * t_decorrido)
     t_decorrido += 1 / sample_rate
 
-wav.write('sine.wav', sample_rate, output.astype(np.float32))
+output = fade_in_out(output)
 
-"""
-samplerate = 44100
-f = 440
-t = 3
-waveform = np.sin
-
-wavetable_length = 64
-wave_table = np.zeros((wavetable_length,))
-
-#for n in range(wavetable_length):
-#    wave_table[n] = waveform(2 * np.pi * n / wavetable_length)
-
-output = np.zeros((t * samplerate,))
-
-index = 0
-indexIncrement = f * wavetable_length / samplerate
-realt = 0
-for n in range(output.shape[0]):
-    output[n] = waveform(2 * np.pi * realt * f)
-    realt += 1. / samplerate
-    #index += indexIncrement
-    #index %= wavetable_length
-
-wav.write('sine.wav', samplerate, output.astype(np.float32))
-"""
+wav.write('sine_fade.wav', sample_rate, output.astype(np.float32))
