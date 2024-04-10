@@ -5,6 +5,9 @@ from synth import *
 # Imagem utilizada pelo comando 'push' sem argumentos:
 DEFAULT_IMG_PATH = './img.bmp'
 
+# Lista de audios gerados, um por imagem:
+audio_list = []
+
 
 def display_help(input_args):
     for key, (func, args, desc) in command_dict.items():
@@ -20,18 +23,20 @@ def shut_down(input_args):
 def push_image(input_args):
     img_path = input_args[1] if len(input_args) > 1 else DEFAULT_IMG_PATH
     img = load_image(img_path)
-    bin_img = binarize_image(img, debug = False)
+    bin_img = binarize_image(img, debug = False) # '= True' mostra a imagem.
     notes = get_notes_from_image(bin_img, NUM_NOTES, 3)
-    img_output = generate_audio_from_notes(notes)
-    wav.write('output.wav', SAMPLE_RATE, img_output.astype(np.float32))
+    audio = generate_audio_from_notes(notes)
+    audio_list.append(audio)
     return True
 
 
 def clear_images(input_args):
+    audio_list = []
     return True
 
 
 def play(input_args):
+    write_audio_file(audio_list)
     return True
 
 
@@ -44,9 +49,11 @@ command_dict = {
 }
 
 
-def run():
-    calculate_note_frequencies()
+def setup():
+    compute_note_frequencies()
 
+
+def run():
     is_running = True
     print('Running Synesthesia…')
     print('Try typing \'help\' for the command list!\n')
@@ -63,4 +70,5 @@ def run():
     print('Shutting down Synesthesia…')
 
 
+setup()
 run()
