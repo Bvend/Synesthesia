@@ -1,4 +1,5 @@
-from image_processing import load_image, binarize_image
+from image_processing import *
+from synth import *
 
 
 # Imagem utilizada pelo comando 'push' sem argumentos:
@@ -19,7 +20,10 @@ def shut_down(input_args):
 def push_image(input_args):
     img_path = input_args[1] if len(input_args) > 1 else DEFAULT_IMG_PATH
     img = load_image(img_path)
-    binarize_image(img, debug = True)
+    bin_img = binarize_image(img, debug = False)
+    notes = get_notes_from_image(bin_img, NUM_NOTES, 3)
+    img_output = generate_audio_from_notes(notes)
+    wav.write('output.wav', SAMPLE_RATE, img_output.astype(np.float32))
     return True
 
 
@@ -41,6 +45,8 @@ command_dict = {
 
 
 def run():
+    calculate_note_frequencies()
+
     is_running = True
     print('Running Synesthesia…')
     print('Try typing \'help\' for the command list!\n')

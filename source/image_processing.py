@@ -37,16 +37,16 @@ def get_notes_from_image(img, num_notes, note_duration):
             sum = 0
             for y in range(row_h):
                 for x in range(note_duration):
-                    sum += img[i * row_h + y][j * note_duration + x] == 0
-            notes[i][j] = sum > 4
+                    sum += img[i * row_h + y, j * note_duration + x] == 0
+            notes[i, j] = sum > 4
     return notes
 
 
 # Funcao temporaria
 def generate_test_image():
-    img = np.zeros((180,300,3), np.uint8) # shape(h, l, d)
+    img = np.zeros((216,300,3), np.uint8)
     for y in range(len(img)):
         for x in range(len(img[0])):
             img[y,x] = [255,255,255]
-
-    cv.rectangle(img,(0,177),(300,179),(255,0,0),-1)
+    #cv.rectangle(img,(30,100),(99,98),(255,0,0),-1)
+    cv.imwrite('/home/bernardo/codes/Synesthesia/source/test.bmp', img)

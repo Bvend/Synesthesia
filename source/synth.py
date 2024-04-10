@@ -1,11 +1,29 @@
 import numpy as np
 import scipy.io.wavfile as wav
 
-sample_rate = 44100
-delta_t = 1 / 44100
-gain = -20 # Decibels
 
-# Aplica meia função cosseno para fade in e fade out
+SAMPLE_RATE = 44100
+DELTA_T = 1 / 44100
+GAIN = -40
+TIME_PER_IMAGE = 10
+
+NUM_NOTES = 72
+FREQ_A440 = 440
+LIN_A440 = 45
+f = np.zeros(NUM_NOTES)
+
+
+def adjust_volume(signal, gain):
+    amplitude = 10 ** (gain / 20)
+    signal *= amplitude
+
+
+def add_signals(signal, output, start_idx):
+    length = len(signal)
+    for i in range(length):
+        output[i + start_idx] += signal[i]
+
+
 def fade_in_out(signal, length, fade_length = 1000):
     fade_in = (1 - np.cos(np.linspace(0, np.pi, fade_length))) * 0.5
     fade_out = np.flip(fade_in)
@@ -14,35 +32,40 @@ def fade_in_out(signal, length, fade_length = 1000):
         signal[i] *= fade_in[i]
         signal[length - i - 1] *= fade_out[fade_length - i - 1]
 
-def generate_signal(length, freq, current_t, delta_t):
+
+def generate_signal(length, freq):
     signal = np.zeros(length)
-    current_t_aux = current_t
+    t = 0
     for i in range(length):
-        signal[i] = np.sin(2 * np.pi * freq * current_t_aux)
-        current_t_aux += delta_t
+        signal[i] = np.sin(2 * np.pi * freq * t)
+        t += DELTA_T
     fade_in_out(signal, length)
+    return signal
 
-def adjust_volume(signal, volume_db):
-    amplitude = 10 ** (gain / 20)
-    signal *= amplitude
 
-#def generate_audio_from_page(notes, sample_rate, total_t, current_t, gain):
-#    current_t_aux = current_t
-#    signal = np.zeros(total_t * sample_rate)
-#    num_interv = len(notes[0])
-#    for i in notes:
-#        interv_len = 0
-#        for j in num_interv:
-#            if 
-#    adjust_volume(signal, gain)
-#    return signal
-        
+def generate_audio_from_notes(notes):
+    num_interv = len(notes[0])
+    time_per_interv = TIME_PER_IMAGE / num_interv
+    samples_per_interv = round(time_per_interv * SAMPLE_RATE)
+    output = np.zeros(samples_per_interv * num_interv)
+    for i in range(notes.shape[0]):
+        interv_len = 0; interv_start = 0
+        for j in range(num_interv):
+            if notes[i, j] == 1:
+                interv_len += 1
+            else:
+                if interv_len > 0:
+                    signal = generate_signal(samples_per_interv * interv_len, f[i])
+                    add_signals(signal, output, interv_start * samples_per_interv)   
+                interv_len = 0
+                interv_start = j + 1
+        if interv_len > 0:
+            signal = generate_signal(samples_per_interv * interv_len, f[i])
+            add_signals(signal, output, interv_start * samples_per_interv)
+    adjust_volume(output, GAIN)
+    return output
 
-total_t = 3
-current_t = 0
 
-# Array de audio
-output = np.zeros(total_t * sample_rate)
-signal = np.zeros(total_t * sample_rate)
-
-wav.write('sine.wav', sample_rate, output.astype(np.float32))
+def calculate_note_frequencies():
+    for i in range(len(f)):
+        f[i] = FREQ_A440 * (2 ** ((i - LIN_A440) / 12))
