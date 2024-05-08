@@ -18,6 +18,7 @@ def binarize_image(img, debug = False):
 
     if debug == True:
         cv.imshow('binarized', bin_img)
+        cv.imwrite('binarized.bmp', bin_img)
         cv.waitKey(0)
         cv.destroyAllWindows()
 
@@ -38,7 +39,7 @@ def get_notes_from_image(img, num_notes, note_duration):
             for y in range(row_h):
                 for x in range(note_duration):
                     sum += img[i * row_h + y, j * note_duration + x] == 0
-            notes[i, j] = sum > 4
+            notes[i, j] = sum > 0
     return notes
 
 

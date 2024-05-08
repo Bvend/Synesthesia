@@ -23,7 +23,7 @@ def shut_down(input_args):
 def push_image(input_args):
     img_path = input_args[1] if len(input_args) > 1 else DEFAULT_IMG_PATH
     img = load_image(img_path)
-    bin_img = binarize_image(img, debug = False) # '= True' mostra a imagem.
+    bin_img = binarize_image(img, debug = True) # '= True' mostra a imagem.
     notes = get_notes_from_image(bin_img, NUM_NOTES, 3)
     audio = generate_audio_from_notes(notes)
     audio_list.append(audio)
@@ -31,7 +31,7 @@ def push_image(input_args):
 
 
 def clear_images(input_args):
-    audio_list = []
+    audio_list.clear()
     return True
 
 

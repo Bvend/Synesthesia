@@ -5,10 +5,10 @@ import scipy.io.wavfile as wav
 SAMPLE_RATE = 44100 # em Hz.
 TIME_PER_SAMPLE = 1 / SAMPLE_RATE # em s.
 TIME_PER_IMAGE = 10 # em s.
-GAIN = -40 # em dB.
+GAIN = -20 # em dB.
 NUM_NOTES = 72
 F_A440 = 440 # em Hz.
-INDEX_A440 = 45 # considerando indexacao em 0 para a nota mais grave.
+INDEX_A440 = 1 * 12 + 9 # considerando indexacao em 0 para a nota mais grave.
 
 f = np.zeros(NUM_NOTES) # frequencias das notas, em Hz, deve ser pre-computado.
 
@@ -33,6 +33,7 @@ def generate_signal(length, freq): # 'length' eh o numero de amostras.
     t = 0
     for i in range(length):
         signal[i] = np.sin(2 * np.pi * freq * t)
+        # signal[i] = 1 if np.sin(2 * np.pi * freq * t) >= 0 else -1
         t += TIME_PER_SAMPLE
         # Uma alternativa sem t:
         # signal[i] = np.sin(2 * np.pi * freq * i / SAMPLE_RATE)
@@ -51,6 +52,15 @@ def adjust_volume(signal, gain):
     signal *= amplitude
 
 
+def clip_signal(signal):
+    length = len(signal)
+    for i in range(length):
+        if signal[i] > 1:
+            signal[i] = 1
+        elif signal[i] < -1:
+            signal[i] = -1
+
+
 def generate_audio_from_notes(notes):
     # O ideal seria determinar dimensoes fixas para 'notes' e ter estes valores como constantes:
     num_cell_columns = len(notes[0])
@@ -66,15 +76,16 @@ def generate_audio_from_notes(notes):
             else:
                 if cell_cnt > 0:
                     # Considerar inverter para f[NUM_NOTES - i - 1].
-                    signal = generate_signal(samples_per_cell * cell_cnt, f[i])
+                    signal = generate_signal(samples_per_cell * cell_cnt, f[NUM_NOTES - i - 1])
                     add_signal(signal, output, samples_per_cell * start_cell_idx)
                 cell_cnt = 0
                 start_cell_idx = j + 1
         if cell_cnt > 0:
             # Ver comentario acima.
-            signal = generate_signal(samples_per_cell * cell_cnt, f[i])
+            signal = generate_signal(samples_per_cell * cell_cnt, f[NUM_NOTES - i - 1])
             add_signal(signal, output, samples_per_cell * start_cell_idx)
     adjust_volume(output, GAIN)
+    clip_signal(output)
     return output
 
 
