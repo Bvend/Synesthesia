@@ -1,9 +1,12 @@
 from image_processing import *
 from synth import *
+from plotter import *
+
+from playsound import playsound
 
 
 # Imagem utilizada pelo comando 'push' sem argumentos:
-DEFAULT_IMG_PATH = './img.bmp'
+DEFAULT_IMG_PATH = '../resources/images/color_test.png'
 
 # Lista de audios gerados, um por imagem:
 audio_list = []
@@ -24,8 +27,12 @@ def push_image(input_args):
     img_path = input_args[1] if len(input_args) > 1 else DEFAULT_IMG_PATH
     img = load_image(img_path)
     bin_img = binarize_image(img, debug = True) # '= True' mostra a imagem.
-    notes = get_notes_from_image(bin_img, NUM_NOTES, 3)
+    colored_img = classify_rgb(img, bin_img, True)
+    print('b')
+    notes = get_notes_from_image(bin_img, colored_img, NUM_NOTES, 3)
+    print('c')
     audio = generate_audio_from_notes(notes)
+    print('d')
     audio_list.append(audio)
     return True
 
@@ -37,6 +44,8 @@ def clear_images(input_args):
 
 def play(input_args):
     write_audio_file(audio_list)
+    playsound('output.wav')
+    plot_waveform('output.png', np.concatenate(audio_list))
     return True
 
 

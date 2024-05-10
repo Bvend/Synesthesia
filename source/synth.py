@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.io.wavfile as wav
+from synthesizer import *
 
 
 SAMPLE_RATE = 44100 # em Hz.
@@ -8,7 +9,7 @@ TIME_PER_IMAGE = 10 # em s.
 GAIN = -20 # em dB.
 NUM_NOTES = 72
 F_A440 = 440 # em Hz.
-INDEX_A440 = 1 * 12 + 9 # considerando indexacao em 0 para a nota mais grave.
+INDEX_A440 = 3 * 12 + 9 # considerando indexacao em 0 para a nota mais grave.
 
 f = np.zeros(NUM_NOTES) # frequencias das notas, em Hz, deve ser pre-computado.
 
@@ -68,15 +69,22 @@ def generate_audio_from_notes(notes):
     samples_per_cell = round(SAMPLE_RATE * time_per_column)
 
     output = np.zeros(samples_per_cell * num_cell_columns)
+    tim = 0
     for i in range(notes.shape[0]): # = NUM_NOTES, supostamente.
         cell_cnt = 0; start_cell_idx = 0
         for j in range(num_cell_columns):
-            if notes[i, j] == 1:
+            if notes[i, j] >= 1:
                 cell_cnt += 1
+                tim = notes[i, j]
             else:
                 if cell_cnt > 0:
                     # Considerar inverter para f[NUM_NOTES - i - 1].
-                    signal = generate_signal(samples_per_cell * cell_cnt, f[NUM_NOTES - i - 1])
+                    if tim == 1:
+                        signal = generate_triangle_wave(cell_cnt * time_per_column, f[NUM_NOTES - i - 1]) # triangle
+                    elif tim == 2:
+                        signal = generate_sine_wave(cell_cnt * time_per_column, f[NUM_NOTES - i - 1])
+                    elif tim == 3:
+                        signal = generate_square_wave(cell_cnt * time_per_column, f[NUM_NOTES - i - 1]) # square
                     add_signal(signal, output, samples_per_cell * start_cell_idx)
                 cell_cnt = 0
                 start_cell_idx = j + 1

@@ -20,14 +20,38 @@ def binarize_image(img, debug = False):
         cv.imshow('binarized', bin_img)
         cv.imwrite('binarized.bmp', bin_img)
         cv.waitKey(0)
-        cv.destroyAllWindows()
+        #cv.destroyAllWindows()
 
     return bin_img
 
 
+def classify_rgb(img, bin_img, debug = False):
+    img_colored = img.copy()
+
+    for i, row in enumerate(img):
+        for j, pixel in enumerate(img):
+            if bin_img[i][j] == 255:
+                continue
+            dr = (img[i][j][0] - 255)**2 + img[i][j][1]**2 + img[i][j][2]**2
+            dg = img[i][j][0]**2 + (img[i][j][1] - 255)**2 + img[i][j][2]**2
+            db = img[i][j][0]**2 + img[i][j][1]**2 + (img[i][j][2] - 255)**2
+            if dr < dg and dr < db:
+                img_colored[i][j] = [255, 0, 0]
+            elif dg < dr and dg < db:
+                img_colored[i][j] = [0, 255, 0]
+            else:
+                img_colored[i][j] = [0, 0, 255]
+
+    cv.imshow('colored', img_colored)
+    cv.imwrite('colored.bmp', img_colored)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
+    return img_colored
+
+
 # Altura de img deve ser multiplo de num_notes
 # Comprimento de img deve ser multiplo de note_duration
-def get_notes_from_image(img, num_notes, note_duration):
+def get_notes_from_image(img, color_img, num_notes, note_duration):
     img = np.asarray(img)
     h, w = img.shape
     row_h = h // num_notes
@@ -36,10 +60,26 @@ def get_notes_from_image(img, num_notes, note_duration):
     for i in range(num_notes):
         for j in range(num_interv):
             sum = 0
+            red = 0
+            green = 0
+            blue = 0
             for y in range(row_h):
                 for x in range(note_duration):
                     sum += img[i * row_h + y, j * note_duration + x] == 0
-            notes[i, j] = sum > 0
+                    if color_img[i * row_h + y][j * note_duration + x][0] == 255:
+                        red += 1
+                    elif color_img[i * row_h + y][j * note_duration + x][1] == 255:
+                        green += 1
+                    else:
+                        blue += 1
+            if sum > 0:
+                tim = 3
+                if red > green and red > blue:
+                    tim = 1
+                elif green > red and green > blue:
+                    tim = 2
+                notes[i, j] = tim
+
     return notes
 
 

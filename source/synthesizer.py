@@ -3,7 +3,7 @@ from scipy.signal import convolve
 from scipy.io import wavfile
 
 
-FS_HZ = 48000 # sample rate. standard choices are 44.1 kHz and 48 kHz.
+FS_HZ = 44100 # sample rate. standard choices are 44.1 kHz and 48 kHz.
 
 LEVEL_REF_DB = 85 # maximum sound level expected on the device. 85 dB is
                   # assumed, as it is the limit for safe long-term exposure;
