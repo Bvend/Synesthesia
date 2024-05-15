@@ -1,10 +1,31 @@
-from synthesizer import FS_HZ, LEVEL_REF_DB
+# test module dedicated to plotting note matrices and one-dimensional signals.
+
+
+from synthesizer import FS_HZ
+from composer import NUM_ROWS, NUM_COLS, LEVEL_REF_DB
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
 
 
 M_RATIO = 0.05 # ratio of the plot's margins to their axis' limits.
+
+
+def plot_note_matrix(file_name, notes):
+    plt.matshow(notes, cmap = ListedColormap([[1, 1, 1],
+                                              [0, 0, 1], [0, 1, 0], [1, 0, 0]]))
+    plt.xticks(np.arange(NUM_COLS + 1) - 0.5, minor = True)
+    plt.xticks(np.arange(0, NUM_COLS + 1, 8) - 0.5,
+               labels = np.arange(0, NUM_COLS + 1, 8))
+    plt.yticks(np.arange(NUM_ROWS + 1) - 0.5, minor = True)
+    plt.yticks(np.arange(4, NUM_ROWS + 1, 12) - 0.5,
+               labels = np.arange(4, NUM_ROWS + 1, 12))
+    plt.title('Note matrix')
+    plt.grid(visible = True, which = 'minor', alpha = 0.25)
+    plt.grid(visible = True, which = 'major', alpha = 0.5)
+    plt.savefig(file_name)
+    plt.clf()
 
 
 def plot_waveform(file_name, x, in_db = False, l_s = 0, r_s = np.inf):

@@ -1,21 +1,18 @@
+# module dedicated to generating and processing one-dimensional signals, and
+# inputting/outputting audio.
+# for the composition of the audio track, check composer.
+
+
 import numpy as np
 from scipy.signal import convolve
 from scipy.io import wavfile
 
 
-FS_HZ = 44100 # sample rate. standard choices are 44.1 kHz and 48 kHz.
-
-LEVEL_REF_DB = 85 # maximum sound level expected on the device. 85 dB is
-                  # assumed, as it is the limit for safe long-term exposure;
-                  # however, the higher this value, the greater the attenuation
-                  # performed on the output, and thus, the safer.
-
-GAIN_DB = 60 - LEVEL_REF_DB # output gain. 60 dB is the desired sound level, a
-                            # moderate, conversational one.
+FS_HZ = 48000 # sample rate. standard choices are 44.1 kHz and 48 kHz.
 
 
 def generate_impulse(len_s, delay_s = 0):
-    n = np.arange(len_s * FS_HZ) # sample index array [0 1 2 3 ...].
+    n = np.arange(len_s * FS_HZ) # sample indices array [0 1 2 3 ...].
     x = np.where(n == np.round(delay_s * FS_HZ), 1., 0.)
     return x
 
@@ -76,14 +73,14 @@ def generate_adsr_envelope(len_s, a_s, d_s, s_amp, r_s):
     # sustain: amplitude (in [0, 1]) maintained following decay until release;
     # release: time taken from sustain amplitude to 0.
 
-    numa = int(np.round(a_s * FS_HZ))
-    numd = int(np.round((a_s + d_s) * FS_HZ)) - numa
-    nums = int(np.round((len_s - r_s) * FS_HZ)) - (numa + numd)
-    numr = int(np.ceil(len_s * FS_HZ)) - (numa + numd + nums)
-    xa = np.linspace(0, 1, num = numa, endpoint = False)
-    xd = np.linspace(1, s_amp, num = numd, endpoint = False)
-    xs = np.full(nums, s_amp)
-    xr = np.linspace(s_amp, 0, num = numr, endpoint = False)
+    num_a = int(np.round(a_s * FS_HZ))
+    num_d = int(np.round((a_s + d_s) * FS_HZ)) - num_a
+    num_s = int(np.round((len_s - r_s) * FS_HZ)) - (num_a + num_d)
+    num_r = int(np.ceil(len_s * FS_HZ)) - (num_a + num_d + num_s)
+    xa = np.linspace(0, 1, num = num_a, endpoint = False)
+    xd = np.linspace(1, s_amp, num = num_d, endpoint = False)
+    xs = np.full(num_s, s_amp)
+    xr = np.linspace(s_amp, 0, num = num_r, endpoint = False)
     x = np.concatenate((xa, xd, xs, xr))
     return x
 
