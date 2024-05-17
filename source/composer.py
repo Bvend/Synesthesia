@@ -32,9 +32,6 @@ GAIN_DB = 60 - LEVEL_REF_DB # output gain. 60 dB is the desired sound level, a
                             # moderate, conversational one.
 
 
-from plotter import plot_note_matrix
-
-
 def get_notes_from_image(bin_img, colored_img, debug = False):
     h_img, w_img = bin_img.shape
 
@@ -65,6 +62,7 @@ def get_notes_from_image(bin_img, colored_img, debug = False):
                     notes[i, j] = 3 # red.
 
     if debug == True:
+        from plotter import plot_note_matrix
         plot_note_matrix('../resources/images/test_notes.png', notes)
 
     return notes
@@ -82,13 +80,13 @@ def get_audio_from_notes(notes):
             else:
                 if note_len > 0 and note_timbre != 0:
                     if note_timbre == 1:
-                        note = generate_square_wave(
+                        note = synthetize_blue(# generate_square_wave(
                                  note_len * COL_S, F[NUM_ROWS - 1 - i]) # blue.
                     elif note_timbre == 2:
-                        note = generate_sine_wave(
+                        note = synthetize_green(# generate_sine_wave(
                                  note_len * COL_S, F[NUM_ROWS - 1 - i]) # green.
                     else:
-                        note = generate_sawtooth_wave(
+                        note = synthetize_red(# generate_sawtooth_wave(
                                  note_len * COL_S, F[NUM_ROWS - 1 - i]) # red.
                     begin_sample = int(np.round(note_begin * COL_S * FS_HZ))
                     len_samples = int(np.round(note_len * COL_S * FS_HZ))

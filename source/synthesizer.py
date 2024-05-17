@@ -115,6 +115,31 @@ def filter_signal(x, f):
     return x
 
 
+def synthetize_blue(len_s, f_hz):
+    a = generate_adsr_envelope(len_s, min(0.01, 0.005 * len_s),
+                               min(0.04, 0.02 * len_s),0.5, 0.975 * len_s)
+    e = generate_adsr_envelope(len_s, min(0.01, 0.005 * len_s),
+                               0, 1, 0.025 * len_s)
+    x = a * 1.5 * generate_fm_wave(len_s, f_hz, f_hz, 3 - 2.7 * e)
+    return x
+
+
+def synthetize_green(len_s, f_hz):
+    a = generate_adsr_envelope(len_s, 0.05 * len_s, 0, 1, 0.2 * len_s)
+    x = a * (generate_fm_wave(len_s, f_hz, f_hz, 0.5)
+             + 0.33 * generate_fm_wave(len_s, f_hz, 2 * f_hz, 0.2))
+    return x
+
+
+def synthetize_red(len_s, f_hz):
+    a = generate_adsr_envelope(len_s,
+                               0.09 * len_s, 0.01 * len_s, 0.75, 0.5 * len_s)
+    e = generate_adsr_envelope(len_s, 0.1 * len_s, 0, 1, 0.1 * len_s)
+    x = a * (generate_fm_wave(len_s, f_hz, f_hz, 6.2 + 4 * e)
+             + 0.33 * generate_fm_wave(len_s, f_hz, f_hz, 2.8 * e))
+    return x
+
+
 def read_wav(file_name):
     x = wavfile.read(file_name)[1]
 

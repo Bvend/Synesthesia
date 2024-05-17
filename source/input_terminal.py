@@ -26,8 +26,8 @@ def shut_down(input_args):
 def push_image(input_args):
     img_path = input_args[1] if len(input_args) > 1 else DEFAULT_IMG_PATH
     img = load_image(img_path)
-    bin_img = binarize_image(img, debug = True) # 'True' displays the image.
-    colored_img = classify_rgb(img, bin_img, debug = True)
+    bin_img = binarize_image(img, debug = False) # 'True' displays the image.
+    colored_img = classify_rgb(img, bin_img, debug = False)
     notes = get_notes_from_image(bin_img, colored_img, debug = True)
     audio = get_audio_from_notes(notes)
     audio_list.append(audio)
