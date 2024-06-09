@@ -2,9 +2,16 @@ import numpy as np
 import cv2 as cv
 
 
-# def take_photo():
-#    photo = cv.imread('/home/bernardo/codes/Synesthesia/source/default.bmp', cv.IMREAD_COLOR)
-#    return photo
+def take_photo(debug = False):
+    cam = cv.VideoCapture(0)
+    ret, photo = cam.read()
+    if debug == True:
+        #print(photo.shape)
+        cv.imwrite('/home/raspas/Codes/Synesthesia/source/photo.bmp', photo)
+        # cv.imshow('photo', photo)
+        # cv.waitKey(0)
+        # cv.destroyAllWindows()
+    return photo
 
 
 def load_image(img_path):
@@ -42,12 +49,3 @@ def get_notes_from_image(img, num_notes, note_duration):
             notes[i, j] = sum > 0
     return notes
 
-
-# Funcao temporaria
-def generate_test_image():
-    img = np.zeros((216,300,3), np.uint8)
-    for y in range(len(img)):
-        for x in range(len(img[0])):
-            img[y,x] = [255,255,255]
-    #cv.rectangle(img,(30,100),(99,98),(255,0,0),-1)
-    cv.imwrite('/home/bernardo/codes/Synesthesia/source/test.bmp', img)

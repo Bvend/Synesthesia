@@ -1,9 +1,15 @@
 from image_processing import *
 from synth import *
+# from playsound import playsound
+import pygame
+from pygame.locals import *
+
+
+pygame.mixer.init()
 
 
 # Imagem utilizada pelo comando 'push' sem argumentos:
-DEFAULT_IMG_PATH = './img.bmp'
+DEFAULT_IMG_PATH = '../resources/images/1.jpg'
 
 # Lista de audios gerados, um por imagem:
 audio_list = []
@@ -21,9 +27,10 @@ def shut_down(input_args):
 
 
 def push_image(input_args):
-    img_path = input_args[1] if len(input_args) > 1 else DEFAULT_IMG_PATH
-    img = load_image(img_path)
-    bin_img = binarize_image(img, debug = True) # '= True' mostra a imagem.
+    # img_path = input_args[1] if len(input_args) > 1 else DEFAULT_IMG_PATH
+    # img = load_image(img_path)
+    img = take_photo(debug = True)
+    bin_img = binarize_image(img, debug = False) # '= True' mostra a imagem.
     notes = get_notes_from_image(bin_img, NUM_NOTES, 3)
     audio = generate_audio_from_notes(notes)
     audio_list.append(audio)
@@ -36,7 +43,12 @@ def clear_images(input_args):
 
 
 def play(input_args):
+    if (len(audio_list) == 0):
+        return
     write_audio_file(audio_list)
+    sound = pygame.mixer.Sound('/home/raspas/Codes/Synesthesia/source/output.wav')
+    sound.play()
+    # playsound('output.wav')
     return True
 
 
@@ -70,5 +82,5 @@ def run():
     print('Shutting down Synesthesia…')
 
 
-setup()
-run()
+#setup()
+#run()

@@ -91,4 +91,4 @@ def generate_audio_from_notes(notes):
 
 def write_audio_file(audio_list):
     output = np.concatenate(audio_list)
-    wav.write('output.wav', SAMPLE_RATE, output.astype(np.float32))
+    wav.write('/home/raspas/Codes/Synesthesia/source/output.wav', SAMPLE_RATE, output.astype(np.float32))
