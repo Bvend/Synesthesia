@@ -9,12 +9,12 @@ from synthesizer import *
 import numpy as np
 
 
-NUM_ROWS = 76 # number of rows, i.e. frequencies, of note matrices. 76 is one
+NUM_ROWS = 40 # number of rows, i.e. frequencies, of note matrices. 76 is one
               # less octave than the 88 in most modern pianos.
 
 NUM_COLS = 128 # number of columns, i.e. time intervals, of note matrices.
 
-F = 440 * (2 ** ((np.arange(NUM_ROWS) - 48) / 12))
+F = 440 * (2 ** ((np.arange(NUM_ROWS) - 24) / 12))
 # note frequencies array. A4 = 440 Hz, a standard tuning pitch, is taken as the
 # reference frequency. indexing it by 48 on an array of 76 sets the range to
 # A0-C7.
@@ -53,7 +53,7 @@ def get_notes_from_image(bin_img, colored_img, debug = False):
                         cnt_g += 1
                     elif colored_img[y, x, 2] == 255:
                         cnt_r += 1
-            if cnt_b + cnt_g + cnt_r > 0:
+            if cnt_b + cnt_g + cnt_r > (h_img/40) * (w_img/128) / 3:
                 if cnt_b > cnt_g and cnt_b > cnt_r:
                     notes[i, j] = 1 # blue.
                 elif cnt_g > cnt_r:

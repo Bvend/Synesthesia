@@ -5,7 +5,7 @@ from synthesizer import *
 from playsound import playsound
 
 
-DEFAULT_IMG_PATH = '../resources/images/color_test.png'
+DEFAULT_IMG_PATH = '../resources/images/15.jpg'
 # image used by the 'push' command without arguments.
 
 audio_list = []

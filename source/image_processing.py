@@ -21,10 +21,10 @@ def binarize_image(img, debug = False):
 
     ni, nj = bin_img_borda.shape
     nd = min(ni, nj)
-   
+
     miniI = 0
     miniJ = 0
-    maxI = nj 
+    maxI = nj
     maxJ = nj
     f = False
     for d in range(nd):
@@ -52,7 +52,7 @@ def binarize_image(img, debug = False):
                 break
         if f:
             break
-    
+
     f = False
     for d in range(nd):
         for x in range(d+1):
