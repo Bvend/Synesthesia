@@ -1,3 +1,6 @@
+# test module dedicated to running the application from the terminal.
+
+
 from image_processing import *
 from composer import *
 from synthesizer import *
@@ -5,8 +8,7 @@ from synthesizer import *
 from playsound import playsound
 
 
-DEFAULT_IMG_PATH = '../resources/images/15.jpg'
-# image used by the 'push' command without arguments.
+DEFAULT_IMG = '8.jpg' # image used by the 'push' command without arguments.
 
 audio_list = []
 # list of generated audio tracks, one per image.
@@ -24,9 +26,9 @@ def shut_down(input_args):
 
 
 def push_image(input_args):
-    img_path = input_args[1] if len(input_args) > 1 else DEFAULT_IMG_PATH
-    img = load_image(img_path)
-    img, bin_img = binarize_image(img, debug = False) # 'True' displays the image.
+    file_name = input_args[1] if len(input_args) > 1 else DEFAULT_IMG
+    img = load_image(file_name)
+    img, bin_img = binarize_image(img, debug = False)
     colored_img = classify_rgb(img, bin_img, debug = False)
     notes = get_notes_from_image(bin_img, colored_img, debug = True)
     audio = get_audio_from_notes(notes)
@@ -44,8 +46,8 @@ def play(input_args):
         print('The queue is empty!')
     else:
         output = np.concatenate(audio_list)
-        write_wav('output.wav', output)
-        playsound('output.wav')
+        write_wav('out.wav', output)
+        playsound(AUDIO_DIR + 'out.wav')
     return True
 
 
@@ -79,5 +81,10 @@ def run():
     print('Shutting down Synesthesia…')
 
 
-setup()
-run()
+def main():
+    setup()
+    run()
+
+
+if __name__ == "__main__":
+    main()

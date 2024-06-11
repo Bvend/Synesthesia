@@ -7,8 +7,11 @@ import cv2 as cv
 import numpy as np
 
 
-def load_image(img_path):
-    img = cv.imread(img_path, cv.IMREAD_COLOR)
+IMG_DIR = '../resources/images/' # directory for image input/output.
+
+
+def load_image(file_name):
+    img = cv.imread(IMG_DIR + file_name, cv.IMREAD_COLOR)
     return img
 
 
@@ -94,10 +97,10 @@ def binarize_image(img, debug = False):
     #img_cortada = cv.warpPerspective(bin_img, M, (nj, ni))
     bin_img = bin_img[miniI:maxI, miniJ:maxJ]
     img = img[miniI:maxI, miniJ:maxJ]
+
     if debug == True:
         cv.imshow('binarized', bin_img)
-        cv.imshow('img', img)
-        cv.imwrite('../resources/images/test_binarized.bmp', bin_img)
+        cv.imwrite(IMG_DIR + 'test_binarized.jpg', bin_img)
         cv.waitKey(0)
         cv.destroyAllWindows()
 
@@ -123,7 +126,7 @@ def classify_rgb(img, bin_img, debug = False):
 
     if debug == True:
         cv.imshow('colored', colored_img)
-        cv.imwrite('../resources/images/test_colored.bmp', colored_img)
+        cv.imwrite(IMG_DIR + 'test_colored.jpg', colored_img)
         cv.waitKey(0)
         cv.destroyAllWindows()
 

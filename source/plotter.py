@@ -1,6 +1,7 @@
 # test module dedicated to plotting note matrices and one-dimensional signals.
 
 
+from image_processing import IMG_DIR
 from synthesizer import FS_HZ
 from composer import NUM_ROWS, NUM_COLS, LEVEL_REF_DB
 
@@ -24,7 +25,7 @@ def plot_note_matrix(file_name, notes):
     plt.title('Note matrix')
     plt.grid(visible = True, which = 'minor', alpha = 0.25)
     plt.grid(visible = True, which = 'major', alpha = 0.5)
-    plt.savefig(file_name)
+    plt.savefig(IMG_DIR + file_name)
     plt.clf()
 
 
@@ -47,7 +48,7 @@ def plot_waveform(file_name, x, in_db = False, l_s = 0, r_s = np.inf):
         plt.ylim(-(1 + M_RATIO) * LEVEL_REF_DB, M_RATIO * LEVEL_REF_DB)
     plt.title('Waveform')
     plt.grid(visible = True)
-    plt.savefig(file_name)
+    plt.savefig(IMG_DIR + file_name)
     plt.clf()
 
 
@@ -67,7 +68,7 @@ def plot_frequency(file_name, x, in_db = False, l_hz = 0, r_hz = FS_HZ / 2):
         plt.ylim(-(1 + M_RATIO) * LEVEL_REF_DB, M_RATIO * LEVEL_REF_DB)
     plt.title('Frequency')
     plt.grid(visible = True)
-    plt.savefig(file_name)
+    plt.savefig(IMG_DIR + file_name)
     plt.clf()
 
 
@@ -88,5 +89,5 @@ def plot_phase(file_name, x, l_hz = 0, r_hz = FS_HZ / 2):
     plt.ylim(-(1 + 2 * M_RATIO) * np.pi, (1 + 2 * M_RATIO) * np.pi)
     plt.title('Phase')
     plt.grid(visible = True)
-    plt.savefig(file_name)
+    plt.savefig(IMG_DIR + file_name)
     plt.clf()

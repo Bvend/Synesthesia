@@ -4,20 +4,21 @@
 # for the synthetization and output of audio, check synthesizer.
 
 
-from synthesizer import *
+from synthesizer import FS_HZ, amplify_signal, \
+                        synthesize_blue, synthesize_green, synthesize_red
 
 import numpy as np
 
 
-NUM_ROWS = 40 # number of rows, i.e. frequencies, of note matrices. 76 is one
-              # less octave than the 88 in most modern pianos.
+NUM_ROWS = 40 # number of rows, i.e. frequencies, of note matrices. 40 is three
+              # octaves less than the 88 in most modern pianos.
 
 NUM_COLS = 128 # number of columns, i.e. time intervals, of note matrices.
 
 F = 440 * (2 ** ((np.arange(NUM_ROWS) - 24) / 12))
 # note frequencies array. A4 = 440 Hz, a standard tuning pitch, is taken as the
-# reference frequency. indexing it by 48 on an array of 76 sets the range to
-# A0-C7.
+# reference frequency. indexing it by 24 on an array of 40 sets the range to
+# A2-C6.
 
 COL_S = 60 / (120 * 4) # time length assigned to each matrix column. the values
                        # in the expression are chosen so that each beat in a
@@ -53,7 +54,7 @@ def get_notes_from_image(bin_img, colored_img, debug = False):
                         cnt_g += 1
                     elif colored_img[y, x, 2] == 255:
                         cnt_r += 1
-            if cnt_b + cnt_g + cnt_r > (h_img/40) * (w_img/128) / 3:
+            if cnt_b + cnt_g + cnt_r > (h_img/40) * (w_img/128) / 8:
                 if cnt_b > cnt_g and cnt_b > cnt_r:
                     notes[i, j] = 1 # blue.
                 elif cnt_g > cnt_r:
@@ -63,7 +64,7 @@ def get_notes_from_image(bin_img, colored_img, debug = False):
 
     if debug == True:
         from plotter import plot_note_matrix
-        plot_note_matrix('../resources/images/test_notes.png', notes)
+        plot_note_matrix('test_notes.jpg', notes)
 
     return notes
 
@@ -80,13 +81,13 @@ def get_audio_from_notes(notes):
             else:
                 if note_len > 0 and note_timbre != 0:
                     if note_timbre == 1:
-                        note = synthetize_blue(# generate_square_wave(
+                        note = synthesize_blue(
                                  note_len * COL_S, F[NUM_ROWS - 1 - i]) # blue.
                     elif note_timbre == 2:
-                        note = synthetize_green(# generate_sine_wave(
+                        note = synthesize_green(
                                  note_len * COL_S, F[NUM_ROWS - 1 - i]) # green.
                     else:
-                        note = synthetize_red(# generate_sawtooth_wave(
+                        note = synthesize_red(
                                  note_len * COL_S, F[NUM_ROWS - 1 - i]) # red.
                     begin_sample = int(np.round(note_begin * COL_S * FS_HZ))
                     len_samples = int(np.round(note_len * COL_S * FS_HZ))
