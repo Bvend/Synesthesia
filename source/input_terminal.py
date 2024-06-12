@@ -3,7 +3,7 @@
 
 from image_processing import load_image, pre_process_image
 from composer import get_audio_from_image
-from synthesizer import write_wav, play_audio
+from synthesizer import write_wav, initialize_audio_player, play_audio
 
 import numpy as np
 
@@ -28,8 +28,8 @@ def shut_down(input_args):
 def push_image(input_args):
     file_name = input_args[1] if len(input_args) > 1 else DEFAULT_IMG
     img = load_image(file_name)
-    bin_img, color_img = pre_process_image(img, debug = True)
-    audio = get_audio_from_image(bin_img, color_img, debug = True)
+    bin_img, color_img = pre_process_image(img, debug = False)
+    audio = get_audio_from_image(bin_img, color_img, debug = False)
     audio_list.append(audio)
     return True
 
@@ -40,9 +40,7 @@ def clear_images(input_args):
 
 
 def play(input_args):
-    if len(audio_list) == 0:
-        print('The queue is empty!')
-    else:
+    if len(audio_list) > 0:
         output = np.concatenate(audio_list)
         write_wav('out.wav', output)
         play_audio('out.wav')
@@ -59,7 +57,7 @@ command_dict = {
 
 
 def setup():
-    pass
+    initialize_audio_player()
 
 
 def run():

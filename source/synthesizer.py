@@ -6,7 +6,8 @@
 import numpy as np
 from scipy.signal import convolve
 from scipy.io import wavfile
-from playsound import playsound
+import pygame
+from pygame.locals import *
 
 
 AUDIO_DIR = '../resources/audio/' # directory for audio input/output.
@@ -161,8 +162,13 @@ def read_wav(file_name):
 
 
 def write_wav(file_name, x):
-    wavfile.write(AUDIO_DIR + file_name, FS_HZ, x)
+    wavfile.write(AUDIO_DIR + file_name, FS_HZ, x.astype(np.float32))
+
+
+def initialize_audio_player():
+    pygame.mixer.init()
 
 
 def play_audio(file_name):
-    playsound(AUDIO_DIR + file_name)
+    audio = pygame.mixer.Sound(AUDIO_DIR + file_name)
+    audio.play()

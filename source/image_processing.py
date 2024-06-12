@@ -19,6 +19,12 @@ def load_image(file_name):
     return img
 
 
+def take_photo():
+    cam = cv.VideoCapture(0)
+    ret, photo = cam.read()
+    return photo
+
+
 def find_crop_points(img):
     gray_img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     blur_img = cv.GaussianBlur(gray_img, (5, 5), 0)
