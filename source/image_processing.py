@@ -22,6 +22,7 @@ def load_image(file_name):
 def take_photo():
     cam = cv.VideoCapture(0)
     ret, photo = cam.read()
+    photo = photo[::-1, ::-1]
     return photo
 
 
