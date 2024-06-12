@@ -1,11 +1,11 @@
 # test module dedicated to running the application from the terminal.
 
 
-from image_processing import *
-from composer import *
-from synthesizer import *
+from image_processing import load_image, pre_process_image
+from composer import get_audio_from_image
+from synthesizer import write_wav, play_audio
 
-from playsound import playsound
+import numpy as np
 
 
 DEFAULT_IMG = '8.jpg' # image used by the 'push' command without arguments.
@@ -28,10 +28,8 @@ def shut_down(input_args):
 def push_image(input_args):
     file_name = input_args[1] if len(input_args) > 1 else DEFAULT_IMG
     img = load_image(file_name)
-    img, bin_img = binarize_image(img, debug = False)
-    colored_img = classify_rgb(img, bin_img, debug = False)
-    notes = get_notes_from_image(bin_img, colored_img, debug = True)
-    audio = get_audio_from_notes(notes)
+    bin_img, color_img = pre_process_image(img, debug = True)
+    audio = get_audio_from_image(bin_img, color_img, debug = True)
     audio_list.append(audio)
     return True
 
@@ -47,7 +45,7 @@ def play(input_args):
     else:
         output = np.concatenate(audio_list)
         write_wav('out.wav', output)
-        playsound(AUDIO_DIR + 'out.wav')
+        play_audio('out.wav')
     return True
 
 

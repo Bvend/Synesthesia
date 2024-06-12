@@ -33,34 +33,40 @@ GAIN_DB = 60 - LEVEL_REF_DB # output gain. 60 dB is the desired sound level, a
                             # moderate, conversational one.
 
 
-def get_notes_from_image(bin_img, colored_img, debug = False):
-    h_img, w_img = bin_img.shape
+def get_notes_from_image(bin_img, color_img, debug = False):
+    # split the image into sections:
+    h, w = bin_img.shape
+    i_split = np.round(
+                  np.linspace(0, h, num = NUM_ROWS, endpoint = False)[1 :]
+              ).astype(int)
+    j_split = np.round(
+                  np.linspace(0, w, num = NUM_COLS, endpoint = False)[1 :]
+              ).astype(int)
+    bin_sections = [np.split(row_split, j_split, axis = 1)
+                    for row_split in np.split(bin_img, i_split, axis = 0)]
+    color_sections = [np.split(row_split, j_split, axis = 1)
+                      for row_split in np.split(color_img, i_split, axis = 0)]
 
+    # count color occurrences in each section:
+    where = np.nonzero # function alias for readability.
+    cnt_color = np.array(
+        [[np.sum(color_section[where(bin_section == 0)] == 255, axis = 0)
+          for bin_section, color_section in zip(bin_row, color_row)]
+         for bin_row, color_row in zip(bin_sections, color_sections)])
+    cnt_b, cnt_g, cnt_r = np.moveaxis(cnt_color, 2, 0)
+
+    cnt_tot = cnt_b + cnt_g + cnt_r
+    size_section = np.array([[bin_section.size
+                              for bin_section in row]
+                             for row in bin_sections])
+    is_colored = cnt_tot >= size_section / 8
+    color_is_b = is_colored & (cnt_b > cnt_g) & (cnt_b > cnt_r)
+    color_is_g = is_colored & ~color_is_b & (cnt_g > cnt_r)
+    color_is_r = is_colored & ~color_is_b & ~color_is_g
     notes = np.zeros((NUM_ROWS, NUM_COLS))
-    for i in range(NUM_ROWS):
-        for j in range(NUM_COLS):
-            cnt_b = 0
-            cnt_g = 0
-            cnt_r = 0
-            for y in range(int(np.round(i * h_img / NUM_ROWS)),
-                           int(np.round((i + 1) * h_img / NUM_ROWS))):
-                for x in range(int(np.round(j * w_img / NUM_COLS)),
-                               int(np.round((j + 1) * w_img / NUM_COLS))):
-                    if bin_img[y, x] == 255:
-                        continue
-                    if colored_img[y, x, 0] == 255:
-                        cnt_b += 1
-                    elif colored_img[y, x, 1] == 255:
-                        cnt_g += 1
-                    elif colored_img[y, x, 2] == 255:
-                        cnt_r += 1
-            if cnt_b + cnt_g + cnt_r > (h_img/40) * (w_img/128) / 8:
-                if cnt_b > cnt_g and cnt_b > cnt_r:
-                    notes[i, j] = 1 # blue.
-                elif cnt_g > cnt_r:
-                    notes[i, j] = 2 # green.
-                else:
-                    notes[i, j] = 3 # red.
+    notes[where(color_is_b)] = 1
+    notes[where(color_is_g)] = 2
+    notes[where(color_is_r)] = 3
 
     if debug == True:
         from plotter import plot_note_matrix
@@ -82,13 +88,13 @@ def get_audio_from_notes(notes):
                 if note_len > 0 and note_timbre != 0:
                     if note_timbre == 1:
                         note = synthesize_blue(
-                                 note_len * COL_S, F[NUM_ROWS - 1 - i]) # blue.
+                                 note_len * COL_S, F[NUM_ROWS - 1 - i])
                     elif note_timbre == 2:
                         note = synthesize_green(
-                                 note_len * COL_S, F[NUM_ROWS - 1 - i]) # green.
+                                 note_len * COL_S, F[NUM_ROWS - 1 - i])
                     else:
                         note = synthesize_red(
-                                 note_len * COL_S, F[NUM_ROWS - 1 - i]) # red.
+                                 note_len * COL_S, F[NUM_ROWS - 1 - i])
                     begin_sample = int(np.round(note_begin * COL_S * FS_HZ))
                     len_samples = int(np.round(note_len * COL_S * FS_HZ))
                     end_sample = begin_sample + len_samples
@@ -99,4 +105,10 @@ def get_audio_from_notes(notes):
                     note_timbre = notes[i, j]
     audio = amplify_signal(audio, GAIN_DB) # since the gain is negative,
                                            # actually attenuates the output.
+    return audio
+
+
+def get_audio_from_image(bin_img, color_img, debug = False):
+    notes = get_notes_from_image(bin_img, color_img, debug)
+    audio = get_audio_from_notes(notes)
     return audio

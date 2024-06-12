@@ -9,94 +9,74 @@ import numpy as np
 
 IMG_DIR = '../resources/images/' # directory for image input/output.
 
+B = np.array([255, 0, 0]) # colors.
+G = np.array([0, 255, 0])
+R = np.array([0, 0, 255])
+
 
 def load_image(file_name):
     img = cv.imread(IMG_DIR + file_name, cv.IMREAD_COLOR)
     return img
 
 
+def find_crop_points(img):
+    gray_img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    blur_img = cv.GaussianBlur(gray_img, (5, 5), 0)
+    ret, bin_img = cv.threshold(blur_img, 80, 255, cv.THRESH_BINARY)
+
+    h, w = bin_img.shape
+    searches = [((k, d - k)
+                 for d in range(h + w - 1) for k in range(h)
+                 if d - k >= 0 and d - k < w),
+                ((k, (w - 1) - (d - k))
+                 for d in range(h + w - 1) for k in range(h)
+                 if (w - 1) - (d - k) >= 0 and (w - 1) - (d - k) < w),
+                (((h - 1) - k, d - k)
+                 for d in range(h + w - 1) for k in range(h)
+                 if d - k >= 0 and d - k < w),
+                (((h - 1) - k, (w - 1) - (d - k))
+                 for d in range(h + w - 1) for k in range(h)
+                 if (w - 1) - (d - k) >= 0 and (w - 1) - (d - k) < w)]
+    # each search iterates through the (i, j) pairs of a breadth-first traversal
+    # starting from a corner of the image.
+
+    pts = np.float32([next((j, i)
+                           for i, j in search
+                           if bin_img[i, j] == 255)
+                      for search in searches])
+    # white pixels closest to the corners.
+
+    lx = max(pts[0, 0], pts[2, 0])
+    rx = min(pts[1, 0], pts[3, 0])
+    ly = max(pts[0, 1], pts[1, 1])
+    ry = min(pts[2, 1], pts[3, 1])
+    pts = np.float32([[lx, ly], [rx, ly], [lx, ry], [rx, ry]])
+    # crop to a rectangle inside the quadrangle to further avoid the drawing's
+    # edges.
+
+    return pts
+
+
+def crop_image(img, crop_pts, debug = False):
+    h, w = img.shape[0 : 2]
+    corner_pts = np.float32([(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)])
+    m = cv.getPerspectiveTransform(crop_pts, corner_pts)
+    crop_img = cv.warpPerspective(img, m, (w, h))
+
+    if debug == True:
+        cv.imshow('cropped', crop_img)
+        cv.imwrite(IMG_DIR + 'test_cropped.jpg', crop_img)
+        cv.waitKey(0)
+        cv.destroyAllWindows()
+
+    return crop_img
+
+
 def binarize_image(img, debug = False):
     gray_img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    gray =  cv.GaussianBlur(gray_img,(5,5),0)
-    bin_img = cv.adaptiveThreshold(gray, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C,
+    blur_img = cv.GaussianBlur(gray_img, (5, 5), 0)
+    bin_img = cv.adaptiveThreshold(blur_img, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C,
                                    cv.THRESH_BINARY, 11, 5)
-    ret, bin_img_borda= cv.threshold(gray,80,255,cv.THRESH_BINARY)
-
-    ni, nj = bin_img_borda.shape
-    nd = min(ni, nj)
-
-    miniI = 0
-    miniJ = 0
-    maxI = nj
-    maxJ = nj
-    f = False
-    for d in range(nd):
-        for x in range(d+1):
-            i = x
-            j = d-x
-            if bin_img_borda[i, j] == 255:
-                miniJ = max(miniJ, j)
-                miniI = max(miniI, i)
-                f = True
-                break
-        if f:
-            break
-
-
-    f = False
-    for d in range(nd):
-        for x in range(d+1):
-            i = ni-1-x
-            j = d-x
-            if bin_img_borda[i, j] == 255:
-                miniJ = max(miniJ, j)
-                maxI = min(maxI, i)
-                f = True
-                break
-        if f:
-            break
-
-    f = False
-    for d in range(nd):
-        for x in range(d+1):
-            i = x
-            j = nj-1-d+x
-            if bin_img_borda[i, j] == 255:
-                maxJ = min(maxJ, j)
-                miniI = max(miniI, i)
-                f = True
-                break
-        if f:
-            break
-
-    f = False
-    for d in range(nd):
-        for x in range(d+1):
-            i = ni-1-x
-            j = nj-1-d+x
-            if bin_img_borda[i, j] == 255:
-                maxJ = min(maxJ, j)
-                maxI = min(maxI, i)
-                f = True
-                break
-        if f:
-            break
-
-    delta = 5
-    miniI += delta
-    miniJ += delta
-    maxI -= delta
-    maxJ -= delta
-    pts1 = np.float32([[miniI, miniJ], [maxI, miniJ], [miniI, maxJ], [maxI, maxJ]])
-    '''cv.circle(img, (miniJ, miniI), 2, (0, 255, 0), -1)
-    cv.circle(img, (miniJ, maxI), 2, (0, 255, 0), -1)
-    cv.circle(img, (maxJ, miniI), 2, (0, 255, 0), -1)
-    cv.circle(img, (maxJ, maxI), 2, (0, 255, 0), -1)'''
-    pts2 = np.float32([[0, 0], [0, ni - 1], [nj - 1, nj - 1], [ni - 1, nj - 1]])
-    M = cv.getPerspectiveTransform(pts1, pts2)
-    #img_cortada = cv.warpPerspective(bin_img, M, (nj, ni))
-    bin_img = bin_img[miniI:maxI, miniJ:maxJ]
-    img = img[miniI:maxI, miniJ:maxJ]
 
     if debug == True:
         cv.imshow('binarized', bin_img)
@@ -104,30 +84,37 @@ def binarize_image(img, debug = False):
         cv.waitKey(0)
         cv.destroyAllWindows()
 
-    return img, bin_img
+    return bin_img
 
 
 def classify_rgb(img, bin_img, debug = False):
-    colored_img = img.copy()
+    where = np.nonzero # function alias for readability.
 
-    for i, row in enumerate(img):
-        for j, (b, g, r) in enumerate(row):
-            if bin_img[i, j] == 255:
-                continue
-            db = (b - 255) ** 2 + g ** 2 + r ** 2 # squared euclidean distances.
-            dg = b ** 2 + (g - 255) ** 2 + r ** 2
-            dr = b ** 2 + g ** 2 + (r - 255) ** 2
-            if db < dg and db < dr:
-                colored_img[i, j] = [255, 0, 0] # blue.
-            elif dg < dr:
-                colored_img[i, j] = [0, 255, 0] # green.
-            else:
-                colored_img[i, j] = [0, 0, 255] # red.
+    colors = np.copy(img[where(bin_img == 0)])
+    db = np.linalg.norm(colors - B, axis = 1) # euclidean distances.
+    dg = np.linalg.norm(colors - G, axis = 1)
+    dr = np.linalg.norm(colors - R, axis = 1)
+    color_is_b = (db < dg) & (db < dr) # map to the closest color.
+    color_is_g = ~color_is_b & (dg < dr)
+    color_is_r = ~color_is_b & ~color_is_g
+    colors[where(color_is_b)] = B
+    colors[where(color_is_g)] = G
+    colors[where(color_is_r)] = R
+    color_img = np.copy(img)
+    color_img[where(bin_img == 0)] = colors
 
     if debug == True:
-        cv.imshow('colored', colored_img)
-        cv.imwrite(IMG_DIR + 'test_colored.jpg', colored_img)
+        cv.imshow('colored', color_img)
+        cv.imwrite(IMG_DIR + 'test_colored.jpg', color_img)
         cv.waitKey(0)
         cv.destroyAllWindows()
 
-    return colored_img
+    return color_img
+
+
+def pre_process_image(img, debug = False):
+    crop_pts = find_crop_points(img)
+    crop_img = crop_image(img, crop_pts, debug)
+    bin_img = binarize_image(crop_img, debug)
+    color_img = classify_rgb(crop_img, bin_img, debug)
+    return bin_img, color_img

@@ -6,11 +6,12 @@
 import numpy as np
 from scipy.signal import convolve
 from scipy.io import wavfile
+from playsound import playsound
 
-
-FS_HZ = 48000 # sample rate. standard choices are 44.1 kHz and 48 kHz.
 
 AUDIO_DIR = '../resources/audio/' # directory for audio input/output.
+
+FS_HZ = 48000 # sample rate. standard choices are 44.1 kHz and 48 kHz.
 
 
 def generate_impulse(len_s, delay_s = 0):
@@ -161,3 +162,7 @@ def read_wav(file_name):
 
 def write_wav(file_name, x):
     wavfile.write(AUDIO_DIR + file_name, FS_HZ, x)
+
+
+def play_audio(file_name):
+    playsound(AUDIO_DIR + file_name)
