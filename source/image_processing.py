@@ -30,6 +30,12 @@ def find_crop_points(img):
     gray_img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     blur_img = cv.GaussianBlur(gray_img, (5, 5), 0)
     ret, bin_img = cv.threshold(blur_img, 80, 255, cv.THRESH_BINARY)
+    kernel = np.ones((15,15), np.uint8)
+
+    img_erosion = cv.erode(bin_img, kernel, iterations=1)
+    bin_img = cv.dilate(img_erosion, kernel, iterations=1)
+    #cv.imshow('bin_borda', bin_img)
+    #cv.imshow('bin_borda2', img_dilation)
 
     h, w = bin_img.shape
     searches = [((k, d - k)
